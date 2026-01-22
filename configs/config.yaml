@@ -1,0 +1,21 @@
+# 超参数配置，在源代码中通过yaml库加载
+# 可根据需要修改这些参数以调整模型训练行为, 不需要在代码中硬编码
+data:
+  samples: 100
+  classes: 3
+  batch_size: 64  # None 在 yaml 中表示 null，最好显式指定数值
+  
+model:
+  input_dim: 2
+  hidden_dims: [64]  # 可以通过列表配置多个隐藏层, 动态调整层深
+  output_dim: 3
+  activation: 'relu' # 新增：支持字符串配置
+  dropout_rate: 0.0
+
+training:
+  epochs: 1000
+  learning_rate: 0.02
+  weight_decay: 5e-4 # 5e-4
+  print_every: 100
+  seed: 2026           # 复现性
+  save_dir: 'checkpoints' # 模型保存路径
