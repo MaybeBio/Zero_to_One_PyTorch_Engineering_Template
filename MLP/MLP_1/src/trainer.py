@@ -174,6 +174,11 @@ class Trainer:
         Description
         -----------
         验证集评估函数, 使用 @torch.no_grad() 装饰器自动关闭梯度计算，节省显存
+
+        Args
+        -----
+        dataloader : torch.utils.data.DataLoader
+            验证数据的 DataLoader
         """
         self.model.eval()
         total_loss = 0
@@ -281,6 +286,14 @@ class Trainer:
         -------
         history : dict
             训练历史记录，包含 'loss' 和 'acc' (以及验证集的 'val_loss' 和 'val_acc' 如果提供了验证集)
+        
+        Notes
+        -----
+        - 1. model最后保存的几个检查点:
+            - last_checkpoint.pth: 最新的检查点，用于断点续训
+            - best_model.pth: 验证集上表现最好的模型 (如果提供了验证集)
+            - final_model.pth: 训练结束时的最终模型 (用于归档)
+        如果需要使用训练好的model来进行预测, 可以加载 best_model.pth (如果有验证集) 或 final_model.pth
         """
         start_epoch = 1
         # 1. 断点续传逻辑

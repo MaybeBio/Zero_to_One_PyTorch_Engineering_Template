@@ -1,5 +1,6 @@
 # main.py
 import argparse
+import datetime
 import logging
 import torch
 import torch.optim as optim
@@ -19,7 +20,8 @@ def main():
     args = parse_args()
 
     # 1. 基础设施初始化
-    setup_logging()
+    # '2026-01-23_16-17-38'
+    setup_logging(log_file=f'training_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log')
     logger = logging.getLogger(__name__)
     logger.info("Project initialized.")
     
@@ -37,7 +39,7 @@ def main():
     # 2. 准备数据
     # 工业级：通常会有 Train/Val Split
     # 注意：这里我们演示 batch_size 的使用. 如果在 yaml 里 batch_size 设为 null，则代码 logic 需要处理
-    batch_size = cfg['data'].get('batch_size', None)
+    batch_size = int(cfg['data'].get('batch_size', None))
     
     # 获取训练集和验证集 DataLoader
     # 解释: 这里的划分是在 Dataset 层面进行的，与 batch_size 无关。
@@ -45,8 +47,8 @@ def main():
     # 这样可以在每个 Epoch 结束时用验证集评估模型性能，监控过拟合.
     # 训练集和验证集就划分1次, 后续每一次epoch就是拿这个训练集一直在shuffle取batch训练, 然后每个batch拿固定的这个验证集评估
     train_loader, val_loader = get_dataloader(
-        samples=cfg['data']['samples'], 
-        classes=cfg['data']['classes'],
+        samples=int(cfg['data']['samples']), 
+        classes=int(cfg['data']['classes']),
         batch_size=batch_size,
         shuffle=True,
         val_split=0.2  # 划分 20% 作为验证集
@@ -54,11 +56,11 @@ def main():
 
     # 3. 构建模型 (动态结构)
     model = UniversalMLP(
-        input_dim=cfg['model']['input_dim'],
+        input_dim=int(cfg['model']['input_dim']),
         hidden_dims=cfg['model']['hidden_dims'], 
-        output_dim=cfg['model']['output_dim'],
+        output_dim=int(cfg['model']['output_dim']),
         activation=cfg['model'].get('activation', 'relu'),
-        dropout_rate=cfg['model']['dropout_rate']
+        dropout_rate=float(cfg['model']['dropout_rate'])
     )
     logger.info(f"Model structure:\n{model}")
     
@@ -67,7 +69,7 @@ def main():
     # 作用: 限制权重数值的大小，防止模型过拟合. 值越大，惩罚越强
     optimizer = optim.Adam(
         model.parameters(), 
-        lr=cfg['training']['learning_rate'], 
+        lr=float(cfg['training']['learning_rate']), 
         weight_decay=float(cfg['training']['weight_decay'])
     )
     
@@ -82,9 +84,9 @@ def main():
     logger.info("Start Training...")
     history = trainer.fit(
         train_loader, 
-        epochs=cfg['training']['epochs'], 
+        epochs=int(cfg['training']['epochs']), 
         val_dataloader=val_loader, # 传入验证集
-        print_every=cfg['training']['print_every']
+        print_every=int(cfg['training']['print_every'])
     )
     
     # 6. 可视化并保存结果
